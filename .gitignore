@@ -1,0 +1,27 @@
+# Dependencies and build output
+node_modules/
+.expo/
+dist/
+web-build/
+server/api/index.js
+*.log
+.DS_Store
+
+# Secrets and local settings: never commit
+.env
+.env.*
+!.env.example
+.vercel/
+*.pem
+*.p8
+*.p12
+*.keystore
+*.jks
+credentials.json
+
+# Local tooling
+.claude/
+
+# Kept on this Mac only (client pricing and design review files)
+commercials/
+design/

@@ -1,0 +1,35 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "base": {
+      "node": "22.18.0",
+      "env": {
+        "EXPO_PUBLIC_SHOPIFY_DOMAIN": "aub1my-11.myshopify.com",
+        "EXPO_PUBLIC_SHOPIFY_API_VERSION": "2025-07",
+        "EXPO_PUBLIC_API_URL": "https://b2bstore-app-server.vercel.app"
+      }
+    },
+    "preview": {
+      "extends": "base",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "channel": "preview"
+    },
+    "production": {
+      "extends": "base",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "channel": "production"
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

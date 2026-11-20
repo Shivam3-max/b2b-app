@@ -1,0 +1,642 @@
+<title>B2B Store App</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap">
+<style>
+/* Layout: a real phone screen beside a short reviewer's panel. The phone fills the screen on an actual phone.
+   Single light look on purpose: this mirrors the app, which ships light for shops in bright daylight. */
+:root {
+  --ink: #17140f;
+  --ink-2: #5c564c;
+  --ink-3: #8a8377;
+  --line: #e7e2d9;
+  --wash: #f5f2ec;
+  --paper: #ffffff;
+  --orange: #f26a1b;
+  --orange-deep: #b84a0b;
+  --orange-soft: #fdeee3;
+  --sun: #fdc656;
+  --profit: #0f7a45;
+  --profit-soft: #e6f4ec;
+  --danger: #a3271b;
+  --sans: "Instrument Sans", "Noto Sans Devanagari", system-ui, -apple-system, sans-serif;
+  --serif: "Instrument Serif", Georgia, serif;
+  --gl: max(16px, env(safe-area-inset-left, 0px));
+  --gr: max(16px, env(safe-area-inset-right, 0px));
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--wash); color: var(--ink); font: 400 15px/1.4 var(--sans); overflow: hidden; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; }
+:focus-visible { outline: 2px solid var(--orange-deep); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+
+.stage { height: 100%; display: flex; justify-content: center; align-items: center; gap: 44px; padding-block: 14px; padding-left: var(--gl); padding-right: var(--gr); }
+.phone { position: relative; flex: none; width: 390px; height: min(800px, 100%); background: var(--paper); border: 8px solid var(--ink); border-radius: 38px; overflow: hidden; display: flex; flex-direction: column; }
+.notes { width: 370px; min-width: 0; max-height: 100%; overflow-y: auto; }
+.notes h1 { font: 400 34px/1.08 var(--serif); margin: 0 0 8px; text-wrap: balance; }
+.notes .lead { color: var(--ink-2); margin: 0 0 18px; }
+.notes h2 { font-size: 12px; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-3); margin: 18px 0 8px; font-weight: 600; }
+.notes ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; color: var(--ink-2); font-size: 14px; }
+.tryrow { display: flex; flex-wrap: wrap; gap: 6px; }
+.tryrow button { padding: 7px 11px; border: 1px solid var(--line); background: var(--paper); border-radius: 99px; font-size: 13px; font-weight: 500; }
+.tryrow button:hover { border-color: var(--ink); }
+
+.top { display: flex; align-items: center; gap: 10px; padding: 12px var(--gr) 10px var(--gl); border-bottom: 1px solid var(--line); min-height: 58px; flex: none; }
+.top img { width: 36px; height: 36px; display: block; }
+.top h2 { font-size: 17px; font-weight: 700; margin: 0; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.iconbtn { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: var(--wash); flex: none; font-weight: 700; }
+.chip-proto { display: none; font-size: 11px; font-weight: 600; padding: 5px 9px; border-radius: 99px; background: var(--sun); }
+
+.view { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 14px var(--gr) 18px var(--gl); display: flex; flex-direction: column; gap: 18px; }
+.foot { flex: none; border-top: 1px solid var(--line); padding: 10px var(--gr) 10px var(--gl); display: flex; align-items: center; gap: 12px; background: var(--paper); }
+.foot .sum { flex: 1; min-width: 0; font-size: 13px; color: var(--ink-2); }
+.foot .sum b { display: block; font-size: 18px; color: var(--ink); }
+
+.tabs { flex: none; display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid var(--line); padding: 6px var(--gr) calc(6px + env(safe-area-inset-bottom, 0px)) var(--gl); background: var(--paper); }
+.tab { position: relative; display: grid; justify-items: center; gap: 2px; padding: 5px 0; font-size: 11px; font-weight: 500; color: var(--ink-3); }
+.tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tab.on { color: var(--ink); font-weight: 700; }
+.tab .badge { position: absolute; top: 0; left: 50%; margin-left: 5px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--orange); color: var(--ink); font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 18px; border-radius: 12px; font-weight: 700; background: var(--ink); color: #fff; white-space: nowrap; }
+.btn.line { background: var(--paper); color: var(--ink); border: 1.5px solid var(--ink); }
+.btn.orange { background: var(--orange); color: var(--ink); }
+.btn.small { min-height: 40px; padding: 0 12px; font-size: 14px; border-radius: 10px; }
+.btn.full { width: 100%; }
+.btn[disabled] { opacity: .4; cursor: default; }
+
+.offer { background: var(--sun); margin: -14px calc(var(--gr) * -1) 0 calc(var(--gl) * -1); padding: 8px var(--gr) 8px var(--gl); font-size: 13px; font-weight: 600; text-align: center; }
+.hello { font: 400 29px/1.1 var(--serif); margin: 0; }
+.sec { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.sec h3 { margin: 0; font-size: 17px; font-weight: 700; }
+.sec button { font-size: 13px; font-weight: 600; color: var(--orange-deep); }
+.block { display: flex; flex-direction: column; gap: 10px; }
+
+.reorder { background: var(--ink); color: #fff; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.reorder .k { font-size: 12px; color: #cfc8ba; }
+.reorder .v { font-size: 17px; font-weight: 700; }
+.thumbs { display: flex; gap: 6px; }
+.thumbs img { width: 46px; height: 58px; object-fit: cover; border-radius: 7px; display: block; }
+
+.cats { display: flex; gap: 8px; overflow-x: auto; margin-inline: calc(var(--gl) * -1) calc(var(--gr) * -1); padding-inline: var(--gl) var(--gr); scrollbar-width: none; }
+.cats::-webkit-scrollbar { display: none; }
+.cat { flex: none; min-height: 38px; padding: 0 14px; border-radius: 99px; border: 1px solid var(--line); background: var(--paper); font-size: 14px; font-weight: 500; }
+.cat.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 10px; }
+.card { min-width: 0; display: flex; flex-direction: column; gap: 6px; text-align: left; }
+.card .ph { display: block; width: 100%; aspect-ratio: 4 / 5; border-radius: 12px; overflow: hidden; background: var(--wash); }
+.card .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card .id { font-weight: 700; font-size: 15px; }
+.card .meta { font-size: 12px; color: var(--ink-2); }
+.card .pr { font-weight: 700; }
+.card .pr small { font-weight: 500; color: var(--ink-3); font-size: 11px; }
+.profit { font-size: 12px; font-weight: 600; color: var(--profit); }
+
+.hero { display: block; width: calc(100% + var(--gl) + var(--gr)); max-width: none; margin: -14px calc(var(--gr) * -1) 0 calc(var(--gl) * -1); aspect-ratio: 1 / 1; object-fit: cover; object-position: top; background: var(--wash); }
+.title { font-size: 21px; font-weight: 700; margin: 0 0 2px; line-height: 1.2; }
+.facts { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.facts > div { padding: 9px 12px; min-width: 0; }
+.facts > div:nth-child(odd) { border-right: 1px solid var(--line); }
+.facts > div:nth-child(n+3) { border-top: 1px solid var(--line); }
+.facts .k { font-size: 11px; color: var(--ink-3); }
+.facts .v { font-weight: 600; font-size: 14px; }
+
+.sz { display: grid; grid-template-columns: 1fr auto; gap: 8px 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.sz .nm { font-weight: 600; }
+.sz .pp { font-size: 12px; color: var(--ink-2); }
+.step { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.step button { width: 42px; height: 42px; font-size: 20px; font-weight: 600; }
+.step span { width: 36px; text-align: center; font-weight: 700; }
+
+.search { display: flex; flex-direction: column; gap: 6px; }
+.field { width: 100%; min-height: 48px; padding: 0 14px; border: 1.5px solid var(--ink); border-radius: 12px; background: var(--paper); }
+.hint { font-size: 13px; color: var(--ink-2); margin: 0; }
+.sug { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.sug:empty { display: none; }
+.sug button { display: flex; align-items: center; gap: 10px; padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); }
+.sug button:last-child { border-bottom: 0; }
+.sug img { width: 34px; height: 42px; object-fit: cover; border-radius: 5px; }
+
+.row { border: 1px solid var(--line); border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+.rowhead { display: flex; align-items: center; gap: 10px; }
+.rowhead img { width: 44px; height: 54px; object-fit: cover; border-radius: 7px; flex: none; }
+.rowhead .tx { flex: 1; min-width: 0; }
+.rowhead .tx b { display: block; }
+.rowhead .tx span { font-size: 12px; color: var(--ink-2); }
+.x { width: 34px; height: 34px; border-radius: 50%; background: var(--wash); font-weight: 700; flex: none; }
+.cells { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 5px; }
+.cells label { display: grid; gap: 2px; font-size: 11px; text-align: center; color: var(--ink-2); min-width: 0; }
+.cells input { width: 100%; height: 42px; text-align: center; font-weight: 700; border: 1px solid var(--line); border-radius: 8px; background: var(--wash); padding: 0; }
+.cells input:focus { background: var(--paper); border-color: var(--ink); outline: none; }
+
+.line { display: flex; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.line img { width: 58px; height: 72px; object-fit: cover; border-radius: 8px; flex: none; }
+.line .tx { flex: 1; min-width: 0; }
+.line .tx b { display: block; }
+.line .tx span { font-size: 13px; color: var(--ink-2); display: block; }
+.line .val { font-weight: 700; text-align: right; }
+.bill { display: grid; gap: 7px; }
+.bill div { display: flex; justify-content: space-between; gap: 12px; }
+.bill .t { font-weight: 700; font-size: 18px; padding-top: 8px; border-top: 1px solid var(--line); }
+.bill .g { color: var(--profit); font-weight: 600; }
+.profitbox { background: var(--profit-soft); border-radius: 14px; padding: 12px; display: grid; gap: 4px; }
+.profitbox .big { font-size: 22px; font-weight: 700; color: var(--profit); }
+.profitbox span { font-size: 13px; color: var(--ink-2); }
+
+.order { border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.order .h { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.pill { font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 99px; background: var(--orange-soft); color: var(--orange-deep); }
+.pill.ok { background: var(--profit-soft); color: var(--profit); }
+.track { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.track div { font-size: 11px; color: var(--ink-3); padding-top: 7px; border-top: 3px solid var(--line); }
+.track div.on { color: var(--ink); font-weight: 600; border-top-color: var(--orange); }
+
+.set { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); width: 100%; text-align: left; font-weight: 500; }
+.set small { display: block; font-weight: 400; color: var(--ink-2); font-size: 13px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; flex: none; }
+.seg button { padding: 7px 11px; font-size: 13px; font-weight: 600; }
+.seg button.on { background: var(--ink); color: #fff; }
+input[type=range] { width: 100%; accent-color: var(--orange); height: 28px; }
+.danger { color: var(--danger); }
+.empty { text-align: center; padding: 50px 14px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.empty h3 { margin: 0; font: 400 27px/1.1 var(--serif); }
+.empty p { margin: 0; color: var(--ink-2); }
+
+.login { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 14px; padding: 20px var(--gr) 24px var(--gl); overflow-y: auto; }
+.login img { width: 118px; height: 118px; align-self: center; }
+.login h2 { font: 400 32px/1.08 var(--serif); margin: 0; text-align: center; text-wrap: balance; }
+.login p { margin: 0; text-align: center; color: var(--ink-2); }
+.otp { letter-spacing: .5em; text-align: center; font-weight: 700; font-size: 20px; }
+
+.scrim { position: absolute; inset: 0; background: rgba(23, 20, 15, .45); display: flex; align-items: flex-end; z-index: 5; }
+.sheet { background: var(--paper); width: 100%; max-height: 88%; overflow-y: auto; border-radius: 20px 20px 0 0; padding: 18px var(--gr) calc(18px + env(safe-area-inset-bottom, 0px)) var(--gl); display: flex; flex-direction: column; gap: 12px; }
+.sheet h3 { margin: 0; font-size: 19px; font-weight: 700; }
+.sheet textarea { width: 100%; min-height: 118px; padding: 10px 12px; border: 1.5px solid var(--ink); border-radius: 12px; resize: vertical; }
+.parsed { display: grid; gap: 4px; font-size: 13px; }
+.parsed .bad { color: var(--danger); font-weight: 600; }
+.parsed .good { color: var(--profit); font-weight: 600; }
+.acts { display: flex; gap: 8px; }
+.acts .btn { flex: 1; }
+.sheet .notes { width: auto; max-height: none; overflow: visible; }
+.toast { position: absolute; left: 14px; right: 14px; bottom: 76px; padding: 10px 14px; border-radius: 11px; background: var(--ink); color: #fff; font-size: 14px; font-weight: 500; text-align: center; z-index: 6; }
+
+@media (max-width: 860px) {
+  .stage { padding: 0; gap: 0; }
+  .notes { display: none; }
+  .sheet .notes { display: block; }
+  .phone { width: 100%; height: 100%; border: 0; border-radius: 0; }
+  .chip-proto { display: block; }
+}
+</style>
+
+<div class="stage">
+  <div class="phone" id="app" aria-label="B2B Store app prototype"></div>
+  <aside class="notes" id="notes"></aside>
+</div>
+
+<script>
+/* Real, from the public b2bstore.in homepage: code, colour, fabric, GSM, "from" price, photo.
+   Sample, until the store is connected: sizes, per-size prices, pack make-up, orders, shop details. */
+const styles = [
+  { id:'s1',  code:'710',  colour:'Wine',        name:'Infant cord set',            fabric:'Soft Spun Fleece',          gsm:'260–270', from:265, cat:'Infant', img:'img/s1.jpg' },
+  { id:'s3',  code:'580',  colour:'Red',         name:'Infant cord set',            fabric:'Premium Cotton Fleece',     gsm:'280–290', from:395, cat:'Infant', img:'img/s3.jpg' },
+  { id:'s2',  code:'2570', colour:'Brown',       name:'Infant jogger pants',        fabric:'Premium Cotton Fleece',     gsm:'330–350', from:200, cat:'Infant', img:'img/s2.jpg' },
+  { id:'s4',  code:'581',  colour:'Neon Green',  name:'Infant cord set',            fabric:'Premium Cotton Fleece',     gsm:'280–290', from:350, cat:'Infant', img:'img/s4.jpg' },
+  { id:'s5',  code:'523',  colour:'Aqua Blue',   name:'Infant cord set',            fabric:'Imported Soft Fabric',      gsm:'320–330', from:365, cat:'Infant', img:'img/s5.jpg' },
+  { id:'s8',  code:'2525', colour:'Red',         name:'Infant cord set',            fabric:'Premium Cotton Fleece',     gsm:'330–350', from:425, cat:'Infant', img:'img/s8.jpg' },
+  { id:'s9',  code:'501',  colour:'Black',       name:'Girls sweatshirt',           fabric:'Premium Cotton Fleece',     gsm:'280–300', from:355, cat:'Girls',  img:'img/s9.jpg' },
+  { id:'s10', code:'616',  colour:'Green',       name:'Girls sweatshirt cord set',  fabric:'Spun Fleece',               gsm:'260–270', from:375, cat:'Girls',  img:'img/s10.jpg' },
+  { id:'s11', code:'2603', colour:'Pink',        name:'Girls cord set',             fabric:'Premium Cotton Fleece',     gsm:'330–350', from:650, cat:'Girls',  img:'img/s11.jpg' },
+  { id:'s0',  code:'2508', colour:'Lavender',    name:'YB 2508 with smart button',  fabric:'Cotton Terry',              gsm:'220–230', from:265, cat:'More',   img:'img/s0.jpg' },
+  { id:'s6',  code:'1750', colour:'Light Pink',  name:'YB 1750',                    fabric:'Flexible Cotton',           gsm:'180–190', from:200, cat:'More',   img:'img/s6.jpg' },
+  { id:'s7',  code:'1751', colour:'Black',       name:'YB 1751',                    fabric:'Flexible Cotton Sinker',    gsm:'180–190', from:225, cat:'More',   img:'img/s7.jpg' },
+];
+const SIZES = { Infant:['6M','12M','18M','24M','30M'], Girls:['4Y','6Y','8Y','10Y','12Y'], More:['2Y','4Y','6Y','8Y','10Y'] };
+const byId = id => styles.find(s => s.id === id);
+const sizes = s => SIZES[s.cat];
+const unit = (s, i) => s.from + i * 10;
+const rs = n => '₹' + Math.round(n).toLocaleString('en-IN');
+const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+
+const T = {
+  en: { home:'Home', cat:'Catalogue', pad:'Order pad', cart:'Cart', orders:'Orders', offer:'Extra 2% off on full advance payment',
+    hello:'Ready to restock?', last:'Your last order', reorder:'Reorder in one tap', viewall:'See all', fresh:'Catalogs in style', from:'from',
+    sell:'Sell', profit:'Profit', addPack:'Add full pack', add:'Add to cart', pieces:'pieces', pack:'pack', fabric:'Fabric', gsm:'GSM', sizes:'Sizes and quantity',
+    padHint:'Type a style code, or paste the list your shop sent on WhatsApp.', padField:'Style code, for example 710', paste:'Paste from WhatsApp', addAll:'Add all to cart',
+    cartEmpty:'Your cart is empty', cartEmptyP:'Reorder your last stock or open the order pad.', pay:'Items total', adv:'Full advance discount (2%)', ship:'Shipping', shipV:'At checkout', total:'You pay',
+    ifSell:'If you sell at your markup', earn:'Your profit on this order', checkout:'Go to checkout', track:['Confirmed','Packed','Shipped','Delivered'], reorderBtn:'Reorder', all:'All', Infant:'Infant', Girls:'Girls', More:'More',
+    account:'Account', markup:'My markup', markupP:'Every price also shows your selling price and profit.', lang:'Language', notif:'Order and new-stock alerts', support:'Help on WhatsApp', del:'Delete my account', delP:'Apple and Google both require this option.', out:'Sign out',
+    login:'Wholesale kidswear, direct from the factory', phone:'Your mobile number', otpBtn:'Send OTP', enterOtp:'Enter the OTP', verify:'Verify and continue', placed:'Order placed', placedP:'Your order reached the factory team. You will get an alert when it ships.', viewOrders:'View my orders' },
+  hi: { home:'होम', cat:'कैटलॉग', pad:'ऑर्डर पैड', cart:'कार्ट', orders:'ऑर्डर', offer:'पूरा एडवांस देने पर 2% की अतिरिक्त छूट',
+    hello:'स्टॉक भरना है?', last:'आपका पिछला ऑर्डर', reorder:'एक टैप में दोबारा ऑर्डर', viewall:'सभी देखें', fresh:'नया कैटलॉग', from:'से शुरू',
+    sell:'बिक्री', profit:'मुनाफ़ा', addPack:'पूरा पैक जोड़ें', add:'कार्ट में जोड़ें', pieces:'पीस', pack:'पैक', fabric:'कपड़ा', gsm:'GSM', sizes:'साइज़ और मात्रा',
+    padHint:'स्टाइल कोड लिखें, या WhatsApp वाली लिस्ट पेस्ट करें।', padField:'स्टाइल कोड, जैसे 710', paste:'WhatsApp से पेस्ट करें', addAll:'सब कार्ट में जोड़ें',
+    cartEmpty:'आपका कार्ट खाली है', cartEmptyP:'पिछला स्टॉक दोबारा मँगाएँ या ऑर्डर पैड खोलें।', pay:'कुल सामान', adv:'पूरे एडवांस पर छूट (2%)', ship:'शिपिंग', shipV:'चेकआउट पर', total:'आपको देना है',
+    ifSell:'आपके मार्जिन पर बिक्री', earn:'इस ऑर्डर पर आपका मुनाफ़ा', checkout:'चेकआउट करें', track:['पक्का हुआ','पैक हुआ','भेजा गया','पहुँच गया'], reorderBtn:'दोबारा ऑर्डर', all:'सभी', Infant:'इन्फ़ेंट', Girls:'गर्ल्स', More:'और',
+    account:'अकाउंट', markup:'मेरा मार्जिन', markupP:'हर दाम के साथ आपकी बिक्री और मुनाफ़ा भी दिखेगा।', lang:'भाषा', notif:'ऑर्डर और नए स्टॉक की सूचना', support:'WhatsApp पर मदद', del:'मेरा अकाउंट हटाएँ', delP:'Apple और Google दोनों के लिए यह विकल्प ज़रूरी है।', out:'साइन आउट',
+    login:'किड्सवियर थोक में, सीधे फ़ैक्ट्री से', phone:'आपका मोबाइल नंबर', otpBtn:'OTP भेजें', enterOtp:'OTP डालें', verify:'पुष्टि करें', placed:'ऑर्डर हो गया', placedP:'आपका ऑर्डर फ़ैक्ट्री टीम तक पहुँच गया। भेजे जाने पर सूचना मिलेगी।', viewOrders:'मेरे ऑर्डर देखें' },
+};
+
+const ICON = {
+  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  cat:'<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+  pad:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+  cart:'<path d="M6 8h12l1 12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z"/><path d="M9 10V7a3 3 0 0 1 6 0v3"/>',
+  orders:'<path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
+};
+
+const blank = s => sizes(s).map(() => 0);
+const packOf = (s, n) => sizes(s).map(() => n);
+const SAMPLE_LAST = [['s1', 2], ['s3', 1], ['s2', 1]];
+
+const state = {
+  route: 'home', styleId: null, filter: 'all', lang: 'en', markup: 40, step: 'phone',
+  cart: {}, pad: [{ id:'s1', q:[2,2,2,2,2] }, { id:'s9', q:[1,1,1,1,0] }],
+  orders: [
+    { no:'Sample order A', date:'28 Oct', items:SAMPLE_LAST, stage:2 },
+    { no:'Sample order B', date:'9 Oct',  items:[['s5',1],['s9',2]], stage:3 },
+  ],
+  sheet: null, pasteText: '710 wine 2 pack\n580 red 1 pack\n2603 - 3 packs\n9999 blue 1 pack', parsed: null, toast: '', lastKey: '',
+};
+const t = k => T[state.lang][k];
+
+function addPacks(id, n) {
+  const s = byId(id);
+  const cur = state.cart[id] || blank(s);
+  state.cart[id] = cur.map(v => v + n);
+}
+function addQty(id, arr) {
+  const s = byId(id);
+  const cur = state.cart[id] || blank(s);
+  state.cart[id] = cur.map((v, i) => v + (arr[i] || 0));
+}
+function lineTotals(id, q) {
+  const s = byId(id);
+  return q.reduce((a, v, i) => ({ pcs: a.pcs + v, val: a.val + v * unit(s, i) }), { pcs: 0, val: 0 });
+}
+function cartTotals() {
+  return Object.entries(state.cart).reduce((a, [id, q]) => {
+    const l = lineTotals(id, q);
+    return { pcs: a.pcs + l.pcs, val: a.val + l.val };
+  }, { pcs: 0, val: 0 });
+}
+function bill(val) {
+  const adv = Math.round(val * 0.02);
+  const pay = val - adv;
+  const sale = Math.round(val * (1 + state.markup / 100));
+  return { adv, pay, sale, earn: sale - pay };
+}
+const sellOf = p => Math.round(p * (1 + state.markup / 100));
+
+/* Reads a pasted list such as "710 wine 2 pack" or "YB - 2508 x3". The first number after the code is the pack count. */
+function parseList(text) {
+  return text.split(/\n+/).map(l => l.trim()).filter(Boolean).map(line => {
+    const m = line.match(/^(?:yb\s*-?\s*)?(\d{3,4})\b(.*)$/i);
+    const st = m && styles.find(s => s.code === m[1]);
+    if (!st) return { line, ok: false };
+    const c = m[2].match(/\d+/);
+    return { line, ok: true, st, packs: c ? Math.max(1, +c[0]) : 1 };
+  });
+}
+
+/* Views */
+function topBar(title, back) {
+  return `<header class="top">
+    ${back ? `<button class="iconbtn" data-act="go" data-to="${back}" aria-label="Back">←</button>` : `<img src="img/logo.png" alt="B2B Store">`}
+    <h2>${esc(title)}</h2>
+    <button class="chip-proto" data-act="about">Prototype</button>
+    <button class="iconbtn" data-act="go" data-to="account" aria-label="${esc(t('account'))}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.5 4.2-6.5 8-6.5s7 2 8 6.5"/></svg>
+    </button>
+  </header>`;
+}
+function card(s) {
+  const sell = sellOf(s.from);
+  return `<article class="card">
+    <button class="ph" data-act="style" data-id="${s.id}" aria-label="Open ${esc(s.code)} ${esc(s.colour)}"><img src="${s.img}" alt="${esc(s.name)} in ${esc(s.colour)}" loading="lazy"></button>
+    <div class="id">${esc(s.code)} · ${esc(s.colour)}</div>
+    <div class="meta">${esc(s.gsm)} GSM · ${esc(s.fabric)}</div>
+    <div class="pr num">${rs(s.from)} <small>${t('from')}</small></div>
+    <div class="profit num">${t('sell')} ${rs(sell)} · ${t('profit')} ${rs(sell - s.from)}</div>
+    <button class="btn line small" data-act="addpack" data-id="${s.id}">+ ${t('addPack')}</button>
+  </article>`;
+}
+function viewHome() {
+  const last = SAMPLE_LAST.map(([id, n]) => lineTotals(id, packOf(byId(id), n))).reduce((a, l) => ({ pcs: a.pcs + l.pcs, val: a.val + l.val }), { pcs: 0, val: 0 });
+  return topBar('b2b store') + `<div class="view"><div class="scroll">
+    <div class="offer">${t('offer')}</div>
+    <p class="hello">${t('hello')}</p>
+    <section class="reorder">
+      <div><div class="k">${t('last')} · 28 Oct (sample)</div><div class="v num">${last.pcs} ${t('pieces')} · ${rs(last.val)}</div></div>
+      <div class="thumbs">${SAMPLE_LAST.map(([id]) => `<img src="${byId(id).img}" alt="${esc(byId(id).code)}">`).join('')}</div>
+      <button class="btn orange full" data-act="reorderlast">${t('reorder')}</button>
+    </section>
+    <section class="block">
+      <div class="sec"><h3>${t('fresh')}</h3><button data-act="go" data-to="cat">${t('viewall')}</button></div>
+      <div class="grid">${styles.slice(0, 4).map(card).join('')}</div>
+    </section>
+  </div></div>`;
+}
+function viewCat() {
+  const list = state.filter === 'all' ? styles : styles.filter(s => s.cat === state.filter);
+  return topBar(t('cat')) + `<div class="view"><div class="scroll">
+    <div class="cats">${['all','Infant','Girls','More'].map(c => `<button class="cat ${state.filter === c ? 'on' : ''}" data-act="filter" data-f="${c}">${t(c)}</button>`).join('')}</div>
+    <div class="grid">${list.map(card).join('')}</div>
+  </div></div>`;
+}
+function viewStyle() {
+  const s = byId(state.styleId);
+  const q = state.cart[s.id] || blank(s);
+  const l = lineTotals(s.id, q);
+  return topBar(`${s.code} · ${s.colour}`, 'cat') + `<div class="view"><div class="scroll">
+    <img class="hero" src="${s.img}" alt="${esc(s.name)} in ${esc(s.colour)}">
+    <div>
+      <h3 class="title">${esc(s.name)}</h3>
+      <div class="pr num" style="font-size:18px;font-weight:700">${rs(s.from)} <span style="font-size:13px;font-weight:500;color:var(--ink-3)">${t('from')}</span></div>
+      <div class="profit num">${t('sell')} ${rs(sellOf(s.from))} · ${t('profit')} ${rs(sellOf(s.from) - s.from)}</div>
+    </div>
+    <div class="facts">
+      <div><div class="k">${t('fabric')}</div><div class="v">${esc(s.fabric)}</div></div>
+      <div><div class="k">${t('gsm')}</div><div class="v">${esc(s.gsm)}</div></div>
+    </div>
+    <section>
+      <div class="sec" style="margin-bottom:4px"><h3>${t('sizes')}</h3><button data-act="addpack" data-id="${s.id}">+ ${t('addPack')}</button></div>
+      ${sizes(s).map((nm, i) => `<div class="sz">
+        <div><div class="nm">${nm}</div><div class="pp num">${rs(unit(s, i))} · ${t('sell')} ${rs(sellOf(unit(s, i)))}</div></div>
+        <div class="step"><button data-act="qty" data-id="${s.id}" data-i="${i}" data-d="-1" aria-label="Fewer ${nm}">−</button><span class="num">${q[i]}</span><button data-act="qty" data-id="${s.id}" data-i="${i}" data-d="1" aria-label="More ${nm}">+</button></div>
+      </div>`).join('')}
+    </section>
+  </div>
+  <div class="foot"><div class="sum num"><b>${rs(l.val)}</b>${l.pcs} ${t('pieces')}</div><button class="btn" data-act="go" data-to="cart" ${l.pcs ? '' : 'disabled'}>${t('cart')} →</button></div></div>`;
+}
+function padSum() {
+  return state.pad.reduce((a, r) => { const l = lineTotals(r.id, r.q); return { pcs: a.pcs + l.pcs, val: a.val + l.val }; }, { pcs: 0, val: 0 });
+}
+function viewPad() {
+  const sum = padSum();
+  return topBar(t('pad')) + `<div class="view"><div class="scroll">
+    <div class="search">
+      <p class="hint">${t('padHint')}</p>
+      <input class="field" id="padCode" inputmode="numeric" placeholder="${esc(t('padField'))}" autocomplete="off" aria-label="${esc(t('padField'))}">
+      <div class="sug" id="padSug"></div>
+      <button class="btn line small" data-act="paste">${t('paste')}</button>
+    </div>
+    ${state.pad.map((r, ri) => {
+      const s = byId(r.id);
+      return `<div class="row">
+        <div class="rowhead"><img src="${s.img}" alt=""><div class="tx"><b>${esc(s.code)} · ${esc(s.colour)}</b><span class="num">${rs(s.from)} ${t('from')} · ${esc(s.gsm)} GSM</span></div>
+        <button class="x" data-act="rmrow" data-i="${ri}" aria-label="Remove ${esc(s.code)}">×</button></div>
+        <div class="cells">${sizes(s).map((nm, i) => `<label>${nm}<input class="num" id="pad-${s.id}-${i}" inputmode="numeric" data-pad="${ri}" data-i="${i}" value="${r.q[i] || ''}" placeholder="0"></label>`).join('')}</div>
+      </div>`;
+    }).join('')}
+  </div>
+  <div class="foot"><div class="sum num" id="padSum"><b>${rs(sum.val)}</b>${sum.pcs} ${t('pieces')}</div><button class="btn" id="padAdd" data-act="padadd" ${sum.pcs ? '' : 'disabled'}>${t('addAll')}</button></div></div>`;
+}
+function viewCart() {
+  const ids = Object.keys(state.cart).filter(id => lineTotals(id, state.cart[id]).pcs > 0);
+  if (!ids.length) return topBar(t('cart')) + `<div class="view"><div class="scroll"><div class="empty"><h3>${t('cartEmpty')}</h3><p>${t('cartEmptyP')}</p>
+    <button class="btn orange" data-act="reorderlast">${t('reorder')}</button><button class="btn line" data-act="go" data-to="pad">${t('pad')}</button></div></div></div>`;
+  const tot = cartTotals(); const b = bill(tot.val);
+  return topBar(t('cart')) + `<div class="view"><div class="scroll">
+    <div>${ids.map(id => { const s = byId(id); const l = lineTotals(id, state.cart[id]);
+      return `<div class="line" style="margin-bottom:12px"><img src="${s.img}" alt="">
+        <div class="tx"><b>${esc(s.code)} · ${esc(s.colour)}</b><span class="num">${sizes(s).map((n, i) => state.cart[id][i] ? `${n}×${state.cart[id][i]}` : '').filter(Boolean).join('  ')}</span>
+        <button style="font-size:13px;font-weight:600;color:var(--orange-deep);margin-top:4px" data-act="style" data-id="${id}">Edit</button></div>
+        <div class="val num">${rs(l.val)}<div style="font-size:12px;font-weight:400;color:var(--ink-2)">${l.pcs} ${t('pieces')}</div></div></div>`; }).join('')}</div>
+    <div class="bill num">
+      <div><span>${t('pay')} (${tot.pcs} ${t('pieces')})</span><span>${rs(tot.val)}</span></div>
+      <div class="g"><span>${t('adv')}</span><span>−${rs(b.adv)}</span></div>
+      <div><span>${t('ship')}</span><span>${t('shipV')}</span></div>
+      <div class="t"><span>${t('total')}</span><span>${rs(b.pay)}</span></div>
+    </div>
+    <div class="profitbox num"><span>${t('earn')}, at ${state.markup}%</span><div class="big">${rs(b.earn)}</div><span>${t('ifSell')}: ${rs(b.sale)}</span></div>
+  </div>
+  <div class="foot"><div class="sum num"><b>${rs(b.pay)}</b>${tot.pcs} ${t('pieces')}</div><button class="btn" data-act="checkout">${t('checkout')}</button></div></div>`;
+}
+function viewOrders() {
+  return topBar(t('orders')) + `<div class="view"><div class="scroll">
+    ${state.orders.map((o, oi) => {
+      const v = o.items.reduce((a, [id, n]) => a + lineTotals(id, packOf(byId(id), n)).val, 0);
+      const pc = o.items.reduce((a, [id, n]) => a + lineTotals(id, packOf(byId(id), n)).pcs, 0);
+      return `<article class="order">
+        <div class="h"><b>${esc(o.no)}</b><span class="pill ${o.stage === 3 ? 'ok' : ''}">${t('track')[o.stage]}</span></div>
+        <div class="thumbs">${o.items.map(([id]) => `<img src="${byId(id).img}" alt="${esc(byId(id).code)}">`).join('')}</div>
+        <div class="num" style="font-size:14px;color:var(--ink-2)">${esc(o.date)} · ${pc} ${t('pieces')} · ${rs(v)}</div>
+        <div class="track">${t('track').map((n, i) => `<div class="${i <= o.stage ? 'on' : ''}">${n}</div>`).join('')}</div>
+        <button class="btn line small" data-act="reorderorder" data-i="${oi}">${t('reorderBtn')}</button>
+      </article>`;
+    }).join('')}
+  </div></div>`;
+}
+function viewAccount() {
+  return topBar(t('account'), 'home') + `<div class="view"><div class="scroll" style="gap:0">
+    <div style="padding-bottom:10px"><div style="font:400 26px/1.1 var(--serif)">Your shop (sample)</div><div class="hint num">+91 98••• •••00</div></div>
+    <div style="padding:12px 0;border-bottom:1px solid var(--line)">
+      <div class="sec"><b>${t('markup')}</b><b class="num" id="mkLabel">${state.markup}%</b></div>
+      <input type="range" id="mk" min="10" max="100" step="5" value="${state.markup}" aria-label="${esc(t('markup'))}">
+      <p class="hint">${t('markupP')}</p>
+    </div>
+    <div class="set"><span>${t('lang')}</span><span class="seg"><button class="${state.lang === 'en' ? 'on' : ''}" data-act="lang" data-l="en">English</button><button class="${state.lang === 'hi' ? 'on' : ''}" data-act="lang" data-l="hi">हिंदी</button></span></div>
+    <button class="set" data-act="toast" data-m="In the real app, this turns push alerts on or off.">${t('notif')}<span>›</span></button>
+    <button class="set" data-act="toast" data-m="In the real app, this opens WhatsApp with your order number.">${t('support')}<span>›</span></button>
+    <button class="set" data-act="delete"><span class="danger">${t('del')}<small>${t('delP')}</small></span><span>›</span></button>
+    <button class="set" data-act="signout">${t('out')}<span>›</span></button>
+  </div></div>`;
+}
+function viewLogin() {
+  const phone = state.step === 'phone';
+  return `<div class="login">
+    <img src="img/logo.png" alt="B2B Store Kidswear Wholesale">
+    <h2>${t('login')}</h2>
+    <p>Prototype: the number is a sample and nothing is sent.</p>
+    ${phone
+      ? `<input class="field num" id="lgPhone" readonly value="+91 98765 43200" aria-label="${esc(t('phone'))}"><button class="btn full" data-act="otp">${t('otpBtn')}</button>`
+      : `<input class="field otp num" id="lgOtp" readonly value="4821" aria-label="${esc(t('enterOtp'))}"><button class="btn full" data-act="verify">${t('verify')}</button>`}
+    <div style="display:flex;justify-content:center"><span class="seg"><button class="${state.lang === 'en' ? 'on' : ''}" data-act="lang" data-l="en">English</button><button class="${state.lang === 'hi' ? 'on' : ''}" data-act="lang" data-l="hi">हिंदी</button></span></div>
+  </div>`;
+}
+function viewDone() {
+  return `<div class="view"><div class="scroll"><div class="empty" style="flex:1;justify-content:center">
+    <img src="img/logo.png" alt="" width="84" height="84"><h3>${t('placed')}</h3><p>${t('placedP')}</p>
+    <button class="btn" data-act="go" data-to="orders">${t('viewOrders')}</button></div></div></div>`;
+}
+function notesHTML() {
+  return `<h1>B2B Store app, first prototype</h1>
+    <p class="lead">Tap through it like a shopkeeper would. This is for approving the screens and flow before any app code is written.</p>
+    <h2>Try these</h2>
+    <div class="tryrow">
+      <button data-act="demo" data-d="reorder">Reorder last stock</button>
+      <button data-act="demo" data-d="paste">Paste a WhatsApp list</button>
+      <button data-act="demo" data-d="style">Open a style</button>
+      <button data-act="demo" data-d="markup">Change my markup</button>
+      <button data-act="demo" data-d="hindi">Switch to Hindi</button>
+      <button data-act="demo" data-d="login">Login screen</button>
+    </div>
+    <h2>Real, from b2bstore.in today</h2>
+    <ul><li>12 styles: codes, colours, fabric, GSM and "from" prices</li><li>Product photos and logo</li><li>The 2% full-advance offer on the site banner</li></ul>
+    <h2>Sample, until the store is connected</h2>
+    <ul><li>Sizes, per-size prices and what makes up a pack</li><li>Past orders, shop name and the 40% markup</li><li>Delivery status, and the checkout step</li></ul>
+    <h2>Please check</h2>
+    <ul><li>Is a full pack one piece of each size, or something else?</li><li>Is the 2% off full advance still your payment offer?</li><li>Would your shopkeepers use Hindi, or is English enough?</li></ul>`;
+}
+
+const VIEWS = { home:viewHome, cat:viewCat, style:viewStyle, pad:viewPad, cart:viewCart, orders:viewOrders, account:viewAccount, login:viewLogin, done:viewDone };
+const app = document.getElementById('app');
+
+function sheetHTML() {
+  if (!state.sheet) return '';
+  if (state.sheet === 'paste') {
+    const p = state.parsed;
+    const good = p ? p.filter(x => x.ok) : [];
+    return `<div class="scrim"><div class="sheet" role="dialog" aria-label="${esc(t('paste'))}">
+      <h3>${t('paste')}</h3>
+      <textarea id="pasteBox" aria-label="${esc(t('paste'))}">${esc(state.pasteText)}</textarea>
+      ${p ? `<div class="parsed num">${p.map(x => x.ok
+        ? `<div class="good">✓ ${esc(x.st.code)} ${esc(x.st.colour)}: ${x.packs} ${t('pack')}</div>`
+        : `<div class="bad">Not found: ${esc(x.line)}</div>`).join('')}</div>` : ''}
+      <div class="acts">
+        <button class="btn line" data-act="closesheet">Close</button>
+        ${p ? `<button class="btn" data-act="pasteuse" ${good.length ? '' : 'disabled'}>Add ${good.length} to pad</button>` : `<button class="btn" data-act="pasteread">Read list</button>`}
+      </div></div></div>`;
+  }
+  if (state.sheet === 'checkout') {
+    const b = bill(cartTotals().val);
+    return `<div class="scrim"><div class="sheet" role="dialog" aria-label="Checkout">
+      <h3>Shopify checkout opens here</h3>
+      <p class="hint">In the real app, this step shows your store's address and payment screens, and the order lands in the same Shopify admin. No payment happens in this prototype.</p>
+      <div class="bill num"><div class="t"><span>${t('total')}</span><span>${rs(b.pay)}</span></div></div>
+      <div class="acts"><button class="btn line" data-act="closesheet">Back</button><button class="btn" data-act="place">Place sample order</button></div>
+    </div></div>`;
+  }
+  if (state.sheet === 'delete') {
+    return `<div class="scrim"><div class="sheet" role="dialog" aria-label="${esc(t('del'))}">
+      <h3>${t('del')}</h3><p class="hint">In the real app, this asks for an OTP and then removes your login and personal details. Nothing is deleted in this prototype.</p>
+      <div class="acts"><button class="btn" data-act="closesheet">Keep my account</button></div></div></div>`;
+  }
+  if (state.sheet === 'about') {
+    return `<div class="scrim"><div class="sheet" role="dialog" aria-label="About this prototype"><div class="notes">${notesHTML()}</div>
+      <button class="btn line full" data-act="closesheet">Close</button></div></div>`;
+  }
+  return '';
+}
+function render() {
+  const key = state.route + (state.styleId || '');
+  const prev = app.querySelector('.scroll');
+  const y = prev && state.lastKey === key ? prev.scrollTop : 0;
+  const noTabs = ['login', 'done'].includes(state.route);
+  const badge = cartTotals().pcs;
+  app.innerHTML = VIEWS[state.route]() + (noTabs ? '' : `<nav class="tabs" aria-label="Main">${['home','cat','pad','cart','orders'].map(k => {
+    const on = state.route === k || (k === 'cat' && state.route === 'style');
+    return `<button class="tab ${on ? 'on' : ''}" data-act="go" data-to="${k}" ${on ? 'aria-current="page"' : ''}>
+      <svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>${t(k)}${k === 'cart' && badge ? `<span class="badge num">${badge}</span>` : ''}</button>`;
+  }).join('')}</nav>`) + sheetHTML() + (state.toast ? `<div class="toast" role="status">${esc(state.toast)}</div>` : '');
+  const next = app.querySelector('.scroll');
+  if (next) next.scrollTop = y;
+  state.lastKey = key;
+}
+let toastTimer;
+function toast(m) {
+  state.toast = m; render();
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { state.toast = ''; render(); }, 2200);
+}
+function go(r) { state.route = r; state.sheet = null; render(); }
+function reorder(items) { items.forEach(([id, n]) => addPacks(id, n)); go('cart'); }
+
+function act(el) {
+  const a = el.dataset.act, d = el.dataset;
+  if (a === 'go') return go(d.to);
+  if (a === 'style') { state.styleId = d.id; return go('style'); }
+  if (a === 'filter') { state.filter = d.f; return render(); }
+  if (a === 'addpack') { addPacks(d.id, 1); return toast(`${byId(d.id).code} ${byId(d.id).colour}: ${t('pack')} +1`); }
+  if (a === 'qty') {
+    const s = byId(d.id), q = state.cart[d.id] || blank(s);
+    q[+d.i] = Math.max(0, q[+d.i] + +d.d); state.cart[d.id] = q; return render();
+  }
+  if (a === 'reorderlast') return reorder(SAMPLE_LAST);
+  if (a === 'reorderorder') return reorder(state.orders[+d.i].items);
+  if (a === 'rmrow') { state.pad.splice(+d.i, 1); return render(); }
+  if (a === 'addcode') { addRow(d.id); return; }
+  if (a === 'padadd') { state.pad.forEach(r => addQty(r.id, r.q)); state.pad = []; return go('cart'); }
+  if (a === 'paste') { state.sheet = 'paste'; state.parsed = null; return render(); }
+  if (a === 'pasteread') { state.pasteText = document.getElementById('pasteBox').value; state.parsed = parseList(state.pasteText); return render(); }
+  if (a === 'pasteuse') {
+    state.parsed.filter(x => x.ok).forEach(x => {
+      const row = state.pad.find(r => r.id === x.st.id);
+      if (row) row.q = row.q.map(v => v + x.packs);
+      else state.pad.push({ id: x.st.id, q: packOf(x.st, x.packs) });
+    });
+    state.sheet = null; state.parsed = null; return render();
+  }
+  if (a === 'checkout') { state.sheet = 'checkout'; return render(); }
+  if (a === 'place') {
+    const items = Object.entries(state.cart).filter(([id, q]) => lineTotals(id, q).pcs > 0)
+      .map(([id, q]) => [id, Math.max(1, Math.round(lineTotals(id, q).pcs / sizes(byId(id)).length))]);
+    state.orders.unshift({ no:'New sample order', date:'Today', items, stage:0 });
+    state.cart = {}; return go('done');
+  }
+  if (a === 'closesheet') { state.sheet = null; state.parsed = null; return render(); }
+  if (a === 'delete') { state.sheet = 'delete'; return render(); }
+  if (a === 'about') { state.sheet = 'about'; return render(); }
+  if (a === 'lang') { state.lang = d.l; return render(); }
+  if (a === 'toast') return toast(d.m);
+  if (a === 'signout') { state.step = 'phone'; return go('login'); }
+  if (a === 'otp') { state.step = 'otp'; return render(); }
+  if (a === 'verify') return go('home');
+  if (a === 'demo') {
+    state.sheet = null;
+    if (d.d === 'reorder') return reorder(SAMPLE_LAST);
+    if (d.d === 'paste') { state.route = 'pad'; state.sheet = 'paste'; state.parsed = null; return render(); }
+    if (d.d === 'style') { state.styleId = 's10'; return go('style'); }
+    if (d.d === 'markup') return go('account');
+    if (d.d === 'hindi') { state.lang = state.lang === 'hi' ? 'en' : 'hi'; return render(); }
+    if (d.d === 'login') { state.step = 'phone'; return go('login'); }
+  }
+}
+function addRow(id) {
+  if (!state.pad.find(r => r.id === id)) state.pad.unshift({ id, q: blank(byId(id)) });
+  render();
+  const first = document.getElementById(`pad-${id}-0`);
+  if (first) first.focus();
+}
+function refreshPadFoot() {
+  const sum = padSum();
+  document.getElementById('padSum').innerHTML = `<b>${rs(sum.val)}</b>${sum.pcs} ${t('pieces')}`;
+  document.getElementById('padAdd').disabled = !sum.pcs;
+}
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (el && !el.disabled) { act(el); return; }
+  if (e.target.classList && e.target.classList.contains('scrim')) { state.sheet = null; state.parsed = null; render(); }
+});
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.dataset && el.dataset.pad !== undefined) {
+    el.value = el.value.replace(/\D/g, '').slice(0, 3);
+    state.pad[+el.dataset.pad].q[+el.dataset.i] = +el.value || 0;
+    return refreshPadFoot();
+  }
+  if (el.id === 'padCode') {
+    const v = el.value.replace(/\D/g, '');
+    document.getElementById('padSug').innerHTML = !v ? '' : styles.filter(s => s.code.startsWith(v)).slice(0, 4).map(s =>
+      `<button data-act="addcode" data-id="${s.id}"><img src="${s.img}" alt=""><span><b>${esc(s.code)}</b> ${esc(s.colour)} · ${rs(s.from)} ${t('from')}</span></button>`).join('');
+    return;
+  }
+  if (el.id === 'mk') { state.markup = +el.value; document.getElementById('mkLabel').textContent = el.value + '%'; }
+  if (el.id === 'pasteBox') { state.pasteText = el.value; }
+});
+document.addEventListener('keydown', e => {
+  if (e.target.id === 'padCode' && e.key === 'Enter') {
+    const m = styles.find(s => s.code.startsWith(e.target.value.replace(/\D/g, '')) && e.target.value);
+    if (m) addRow(m.id);
+  }
+  if (e.key === 'Escape' && state.sheet) { state.sheet = null; state.parsed = null; render(); }
+});
+document.getElementById('notes').innerHTML = notesHTML();
+render();
+</script>

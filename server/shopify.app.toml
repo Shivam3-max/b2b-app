@@ -1,0 +1,28 @@
+# Shopify app configuration for "B2B Store App" (custom app, installed only on b2bstore.in).
+# Deploy with the Shopify CLI from this folder: `npx @shopify/cli app deploy` (needs the owner's Shopify login).
+name = "B2B Store App"
+handle = "b2b-store-app"
+application_url = "https://b2bstore-app-server.vercel.app"
+embedded = false
+
+[access_scopes]
+# What the app server may do in the store. Nothing else.
+scopes = "read_products,read_customers,write_customers,read_orders,read_fulfillments,read_metaobjects"
+
+[auth]
+redirect_urls = ["https://b2bstore-app-server.vercel.app/auth/callback"]
+
+[webhooks]
+api_version = "2026-10"
+
+  [[webhooks.subscriptions]]
+  topics = ["orders/create", "orders/fulfilled", "fulfillments/create", "fulfillments/update"]
+  uri = "https://b2bstore-app-server.vercel.app/webhooks/shopify"
+
+  # Mandatory privacy webhooks for apps.
+  [[webhooks.subscriptions]]
+  compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
+  uri = "https://b2bstore-app-server.vercel.app/webhooks/shopify"
+
+# Settings the owner edits live in a store-owned metaobject "b2b_app_settings" (created 18 Nov 2026),
+# Shopify admin > Content > Metaobjects > B2B app settings. The app only reads it.

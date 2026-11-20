@@ -1,0 +1,12 @@
+# Only the app's own files go to Expo's build servers.
+node_modules/
+.expo/
+dist/
+web-build/
+.env
+.env.*
+assets/brand-src/
+scripts/
+*.log
+.DS_Store
+.claude/
